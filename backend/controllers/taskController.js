@@ -49,8 +49,10 @@ exports.create = async (req, res) => {
       return res.status(400).json({ message: 'title and project_id required' });
 
     const task = await Task.create({
-      title, description, project_id, assigned_to,
-      priority, due_date, created_by: req.user.id,
+      title, description, project_id,
+      assigned_to: assigned_to || null,
+      priority, due_date: due_date || null,
+      created_by: req.user.id,
     });
     res.status(201).json(task);
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -68,9 +70,25 @@ exports.update = async (req, res) => {
       if (!status) return res.status(400).json({ message: 'Developer can only update status' });
       await task.update({ status });
     } else {
-      await task.update(req.body);
+      const { title, description, assigned_to, priority, due_date, status } = req.body;
+      await task.update({
+        ...(title       !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(priority    !== undefined && { priority }),
+        ...(status      !== undefined && { status }),
+        ...(due_date    !== undefined && { due_date: due_date || null }),
+        assigned_to: assigned_to !== undefined ? (assigned_to || null) : task.assigned_to,
+      });
     }
-    res.json(task);
+
+    const updated = await Task.findByPk(task.id, {
+      include: [
+        { model: User, as: 'assignee', attributes: ['id','name','email'] },
+        { model: User, as: 'creator',  attributes: ['id','name'] },
+        { model: Project, attributes: ['id','name'] },
+      ],
+    });
+    res.json(updated);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
