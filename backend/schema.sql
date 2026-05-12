@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict tLSeMHch9g5aZBePbns7k54bYy6TAzQkbVyrfIzytSAawa20kr1RRAcBZelj8qV
+\restrict hHn6Uy1HHqqFH9mSC7KjYRcJ3hr6pZJs1xhLSqLq6ealRdxR0zLOhcBpcgouSpf
 
 -- Dumped from database version 16.13 (Homebrew)
 -- Dumped by pg_dump version 16.13 (Homebrew)
@@ -318,6 +318,190 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: users users_email_key1; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key1 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key10; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key10 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key11; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key11 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key12; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key12 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key13; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key13 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key14; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key14 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key15; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key15 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key16; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key16 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key17; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key17 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key18; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key18 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key19; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key19 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key2; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key2 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key20; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key20 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key21; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key21 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key22; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key22 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key23; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key23 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key3; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key3 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key4; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key4 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key5; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key5 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key6; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key6 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key7; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key7 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key8; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key8 UNIQUE (email);
+
+
+--
+-- Name: users users_email_key9; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key9 UNIQUE (email);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -385,5 +569,5 @@ ALTER TABLE ONLY public.tasks
 -- PostgreSQL database dump complete
 --
 
-\unrestrict tLSeMHch9g5aZBePbns7k54bYy6TAzQkbVyrfIzytSAawa20kr1RRAcBZelj8qV
+\unrestrict hHn6Uy1HHqqFH9mSC7KjYRcJ3hr6pZJs1xhLSqLq6ealRdxR0zLOhcBpcgouSpf
 
