@@ -58,7 +58,7 @@ export default function TasksPage() {
   useEffect(() => {
     api.get('/projects').then(({ data }) => setProjects(data.data));
     if (['Admin','Manager'].includes(user?.role))
-      api.get('/users').then(({ data }) => setAllUsers(data.data));
+      api.get('/users').then(({ data }) => setAllUsers(data.data.filter(u => u.role !== 'Admin')));
   }, []);
 
   const createTask = async () => {
@@ -204,7 +204,7 @@ export default function TasksPage() {
                   {tasks.map(t=>(
                     <tr key={t.id} onClick={()=>navigate(`/tasks/${t.id}`)} style={{ cursor:'pointer' }}>
                       <td style={{ fontWeight:500 }}>{t.title}</td>
-                      <td style={{ color:'var(--muted-foreground)' }}>{t.Project?.name||'—'}</td>
+                      <td style={{ color:'var(--muted-foreground)' }}>{t.Project?.name || t.project?.name || '—'}</td>
                       <td>
                         {t.assignee ? (
                           <div style={{ display:'flex', alignItems:'center', gap:8 }}>

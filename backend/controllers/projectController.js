@@ -12,6 +12,13 @@ exports.getAll = async (req, res) => {
     if (search) where.name = { [Op.iLike]: `%${search}%` };
     if (status) where.status = status;
 
+    // Developer: only projects they are a member of
+    if (req.user.role === 'Developer') {
+      const memberships = await ProjectMember.findAll({ where: { user_id: req.user.id }, attributes: ['project_id'] });
+      const ids = memberships.map(m => m.project_id);
+      where.id = ids.length ? ids : [-1]; // -1 returns nothing if no memberships
+    }
+
     const { rows, count } = await Project.findAndCountAll({
       where, limit, offset,
       include: [{ model: User, as: 'members', attributes: ['id','name','email','role'], through: { attributes: [] } }],
@@ -23,6 +30,14 @@ exports.getAll = async (req, res) => {
 
 exports.getOne = async (req, res) => {
   try {
+    // Developer: only if member of this project
+    if (req.user.role === 'Developer') {
+      const member = await ProjectMember.findOne({
+        where: { project_id: req.params.id, user_id: req.user.id }
+      });
+      if (!member) return res.status(403).json({ message: 'Access denied' });
+    }
+
     const project = await Project.findByPk(req.params.id, {
       include: [{ model: User, as: 'members', attributes: ['id','name','email','role'], through: { attributes: [] } }],
     });

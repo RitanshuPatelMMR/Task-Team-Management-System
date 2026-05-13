@@ -157,7 +157,7 @@ export default function LandingPage() {
         </button>
 
         {/* Stats row */}
-        <div style={{ display: 'flex', gap: 48, justifyContent: 'center', marginTop: 56, flexWrap: 'wrap' }}>
+        {/* <div style={{ display: 'flex', gap: 48, justifyContent: 'center', marginTop: 56, flexWrap: 'wrap' }}>
           {[
             { val: '3',    label: 'User roles' },
             { val: 'JWT',  label: 'Auth method' },
@@ -169,7 +169,7 @@ export default function LandingPage() {
               <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>{label}</div>
             </div>
           ))}
-        </div>
+        </div> */}
       </section>
 
       {/* Features grid */}

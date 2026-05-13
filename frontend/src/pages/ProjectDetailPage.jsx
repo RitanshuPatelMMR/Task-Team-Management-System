@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const StatusBadge = ({ value }) => {
   const colors = {
@@ -27,30 +25,58 @@ function Avatar({ name, size=28 }) {
   );
 }
 
+const inputStyle = { border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', fontSize:13, background:'var(--background)', color:'var(--foreground)', width:'100%', boxSizing:'border-box' };
+const selectStyle = { border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', fontSize:13, background:'var(--background)', color:'var(--foreground)', width:'100%' };
+
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [project, setProject] = useState(null);
-  const [tasks, setTasks]     = useState([]);
-  const [users, setUsers]     = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [memberOpen, setMemberOpen]   = useState(false);
 
-  const fetchProject = () => api.get(`/projects/${id}`).then(({ data }) => { setProject(data); setSelectedIds(data.members.map(m=>m.id)); });
-  const fetchTasks   = () => api.get(`/tasks?project_id=${id}`).then(({ data }) => setTasks(data.data));
-  const fetchUsers   = () => api.get('/users').then(({ data }) => setUsers(data.data));
+  const [project, setProject]   = useState(null);
+  const [tasks, setTasks]       = useState([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name:'', description:'', status:'', start_date:'', end_date:'' });
+  const [editSaving, setEditSaving] = useState(false);
+
+  const canEdit = ['Admin','Manager'].includes(user?.role);
+
+  const fetchProject = () => api.get(`/projects/${id}`).then(({ data }) => {
+    setProject(data);
+    setEditForm({
+      name:        data.name        || '',
+      description: data.description || '',
+      status:      data.status      || 'Planned',
+      start_date:  data.start_date  || '',
+      end_date:    data.end_date    || '',
+    });
+  });
+
+  const fetchTasks = () => api.get(`/tasks?project_id=${id}`).then(({ data }) => setTasks(data.data));
 
   useEffect(() => { fetchProject(); fetchTasks(); }, [id]);
 
-  const assignMembers = async () => {
-    await api.post(`/projects/${id}/members`, { user_ids: selectedIds });
-    setMemberOpen(false); fetchProject();
+  const saveEdit = async () => {
+    setEditSaving(true);
+    try {
+      await api.put(`/projects/${id}`, {
+        name:        editForm.name,
+        description: editForm.description,
+        status:      editForm.status,
+        start_date:  editForm.start_date  || null,
+        end_date:    editForm.end_date    || null,
+      });
+      await fetchProject();
+      setEditOpen(false);
+    } catch (err) { alert(err.response?.data?.message); }
+    setEditSaving(false);
   };
 
-  const toggleId = uid => setSelectedIds(prev => prev.includes(uid) ? prev.filter(x=>x!==uid) : [...prev, uid]);
-
-  if (!project) return <div className="app-shell"><Sidebar /><main className="app-main"><div style={{ padding:40, color:'var(--muted-foreground)' }}>Loading...</div></main></div>;
+  if (!project) return (
+    <div className="app-shell"><Sidebar />
+      <main className="app-main"><div style={{ padding:40, color:'var(--muted-foreground)' }}>Loading...</div></main>
+    </div>
+  );
 
   return (
     <div className="app-shell">
@@ -80,54 +106,70 @@ export default function ProjectDetailPage() {
                 </p>
               )}
             </div>
+            {canEdit && (
+              <button
+                onClick={()=>setEditOpen(o=>!o)}
+                style={{ padding:'7px 18px', background: editOpen ? '#059669' : 'var(--muted)', color: editOpen ? '#fff' : 'var(--foreground)', border:'1px solid var(--border)', borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer', flexShrink:0 }}
+              >
+                {editOpen ? 'Close' : 'Edit Project'}
+              </button>
+            )}
           </div>
 
-          {/* Members */}
-          <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-              <h3 style={{ margin:0, fontSize:14, fontWeight:600 }}>Members ({project.members?.length})</h3>
-              {['Admin','Manager'].includes(user?.role) && (
-                <Dialog open={memberOpen} onOpenChange={o=>{ if(o) fetchUsers(); setMemberOpen(o); }}>
-                  <DialogTrigger asChild>
-                    <button style={{ padding:'6px 14px', background:'#059669', color:'#fff', border:'none', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer' }}>
-                      Assign Members
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Assign Members</DialogTitle>
-                      <p style={{ fontSize:13, color:'var(--muted-foreground)', margin:'4px 0 0' }}>Select team members for this project.</p>
-                    </DialogHeader>
-                    <div style={{ display:'flex', flexDirection:'column', gap:8, maxHeight:280, overflowY:'auto', margin:'12px 0' }}>
-                      {users.map(u=>(
-                        <label key={u.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 12px', borderRadius:8, cursor:'pointer', background: selectedIds.includes(u.id) ? '#ecfdf5' : 'transparent', border:'1px solid', borderColor: selectedIds.includes(u.id) ? '#a7f3d0' : 'transparent' }}>
-                          <input type="checkbox" checked={selectedIds.includes(u.id)} onChange={()=>toggleId(u.id)} style={{ accentColor:'#059669' }} />
-                          <Avatar name={u.name} size={28} />
-                          <div>
-                            <div style={{ fontSize:13, fontWeight:500 }}>{u.name}</div>
-                            <div style={{ fontSize:11, color:'var(--muted-foreground)' }}>{u.role}</div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                    <button onClick={assignMembers} style={{ width:'100%', padding:'10px', background:'#059669', color:'#fff', border:'none', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer' }}>
-                      Save Members
-                    </button>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-              {project.members?.map(m=>(
-                <div key={m.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 12px', background:'var(--muted)', borderRadius:99, fontSize:13 }}>
-                  <Avatar name={m.name} size={22} />
-                  <span>{m.name}</span>
-                  <span style={{ fontSize:11, color:'var(--muted-foreground)' }}>· {m.role}</span>
+          {/* Edit panel */}
+          {editOpen && canEdit && (
+            <div style={{ background:'var(--card)', border:'1px solid #10b981', borderRadius:12, padding:'20px 24px', marginBottom:24 }}>
+              <h3 style={{ margin:'0 0 16px', fontSize:14, fontWeight:600 }}>Edit Project</h3>
+              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:500, color:'var(--muted-foreground)', display:'block', marginBottom:4 }}>Project name</label>
+                  <input style={inputStyle} value={editForm.name} onChange={e=>setEditForm(f=>({...f,name:e.target.value}))} />
                 </div>
-              ))}
-              {project.members?.length === 0 && <p style={{ fontSize:13, color:'var(--muted-foreground)' }}>No members assigned yet.</p>}
+                <div>
+                  <label style={{ fontSize:12, fontWeight:500, color:'var(--muted-foreground)', display:'block', marginBottom:4 }}>Description</label>
+                  <textarea style={{ ...inputStyle, minHeight:72, resize:'vertical' }} value={editForm.description} onChange={e=>setEditForm(f=>({...f,description:e.target.value}))} />
+                </div>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:500, color:'var(--muted-foreground)', display:'block', marginBottom:4 }}>Status</label>
+                  <select style={selectStyle} value={editForm.status} onChange={e=>setEditForm(f=>({...f,status:e.target.value}))}>
+                    <option>Planned</option><option>Active</option><option>Completed</option><option>On Hold</option>
+                  </select>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <div>
+                    <label style={{ fontSize:12, fontWeight:500, color:'var(--muted-foreground)', display:'block', marginBottom:4 }}>Start date</label>
+                    <input type="date" style={inputStyle} value={editForm.start_date} onChange={e=>setEditForm(f=>({...f,start_date:e.target.value}))} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize:12, fontWeight:500, color:'var(--muted-foreground)', display:'block', marginBottom:4 }}>End date</label>
+                    <input type="date" style={inputStyle} value={editForm.end_date} onChange={e=>setEditForm(f=>({...f,end_date:e.target.value}))} />
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                  <button onClick={()=>setEditOpen(false)} style={{ padding:'8px 18px', background:'var(--muted)', color:'var(--foreground)', border:'1px solid var(--border)', borderRadius:8, fontSize:13, cursor:'pointer' }}>Cancel</button>
+                  <button onClick={saveEdit} disabled={editSaving} style={{ padding:'8px 18px', background:'#059669', color:'#fff', border:'none', borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer' }}>
+                    {editSaving ? 'Saving…' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+{/* Members — read only */}
+<div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+  <h3 style={{ margin:'0 0 16px', fontSize:14, fontWeight:600 }}>Members ({project.members?.length})</h3>
+  <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+    {project.members?.length === 0 && (
+      <p style={{ fontSize:13, color:'var(--muted-foreground)' }}>No members assigned yet.</p>
+    )}
+    {project.members?.map(m=>(
+      <div key={m.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 12px', background:'var(--muted)', borderRadius:99, fontSize:13 }}>
+        <Avatar name={m.name} size={22} />
+        <span>{m.name}</span>
+        <span style={{ fontSize:11, color:'var(--muted-foreground)' }}>· {m.role}</span>
+      </div>
+    ))}
+  </div>
+</div>
 
           {/* Tasks */}
           <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
@@ -143,7 +185,7 @@ export default function ProjectDetailPage() {
                 </thead>
                 <tbody>
                   {tasks.map(t=>(
-                    <tr key={t.id} onClick={()=>navigate(`/tasks/${t.id}`)}>
+                    <tr key={t.id} style={{ cursor:'pointer' }} onClick={()=>navigate(`/tasks/${t.id}`)}>
                       <td style={{ fontWeight:500 }}>{t.title}</td>
                       <td>
                         {t.assignee ? (
@@ -151,7 +193,7 @@ export default function ProjectDetailPage() {
                             <Avatar name={t.assignee.name} size={24} />
                             <span>{t.assignee.name}</span>
                           </div>
-                        ) : '—'}
+                        ) : <span style={{ color:'var(--muted-foreground)' }}>Unassigned</span>}
                       </td>
                       <td><StatusBadge value={t.status} /></td>
                       <td><StatusBadge value={t.priority} /></td>
@@ -162,6 +204,7 @@ export default function ProjectDetailPage() {
               </table>
             )}
           </div>
+
         </div>
       </main>
     </div>

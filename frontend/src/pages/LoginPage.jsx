@@ -101,11 +101,11 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 20 }}>
+        {/* <div style={{ position: 'relative', zIndex: 1, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 20 }}>
           <p style={{ fontSize: 12, color: 'rgba(167,243,208,0.5)', textAlign: 'center' }}>
             Built for clarity. Designed for speed.
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Right form panel */}

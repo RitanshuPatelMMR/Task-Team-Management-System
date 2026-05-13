@@ -16,34 +16,35 @@ const icons = {
 };
 
 const STAT_CONFIG = [
-  { key: 'totalProjects',  label: 'Total Projects', icon: icons.projects, cls: 'stat-emerald' },
-  { key: 'totalTasks',     label: 'Total Tasks',     icon: icons.tasks,   cls: 'stat-teal'    },
-  { key: 'completedTasks', label: 'Completed',       icon: icons.check,   cls: 'stat-green'   },
-  { key: 'pendingTasks',   label: 'Pending',         icon: icons.clock,   cls: 'stat-amber'   },
-  { key: 'overdueTasks',   label: 'Overdue',         icon: icons.alert,   cls: 'stat-rose'    },
+  { key: 'totalProjects',  label: 'My Projects',  icon: icons.projects, cls: 'stat-emerald', devLabel: 'My Projects'  },
+  { key: 'totalTasks',     label: 'Total Tasks',   icon: icons.tasks,    cls: 'stat-teal',    devLabel: 'My Tasks'     },
+  { key: 'completedTasks', label: 'Completed',     icon: icons.check,    cls: 'stat-green',   devLabel: 'Completed'    },
+  { key: 'pendingTasks',   label: 'Pending',       icon: icons.clock,    cls: 'stat-amber',   devLabel: 'Pending'      },
+  { key: 'overdueTasks',   label: 'Overdue',       icon: icons.alert,    cls: 'stat-rose',    devLabel: 'Overdue'      },
 ];
 
-const STATUS_COLORS   = { 'Todo': '#10b981', 'In Progress': '#059669', 'Review': '#06b6d4', 'Completed': '#8b5cf6' };
-const PRIORITY_COLORS = { 'Low': '#10b981', 'Medium': '#f59e0b', 'High': '#ef4444' };
+const STATUS_COLORS   = { 'Todo':'#10b981','In Progress':'#059669','Review':'#06b6d4','Completed':'#8b5cf6' };
+const PRIORITY_COLORS = { 'Low':'#10b981','Medium':'#f59e0b','High':'#ef4444' };
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <span style={{ fontWeight: 500 }}>{payload[0].name || payload[0].payload?.name}</span>
-      <span style={{ marginLeft: 8, color: 'var(--muted-foreground)' }}>{payload[0].value}</span>
+    <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+      <span style={{ fontWeight:500 }}>{payload[0].name || payload[0].payload?.name}</span>
+      <span style={{ marginLeft:8, color:'var(--muted-foreground)' }}>{payload[0].value}</span>
     </div>
   );
 };
 
-const Skeleton = ({ w = '100%', h = 20, r = 6 }) => (
-  <div style={{ width: w, height: h, borderRadius: r, background: 'var(--muted)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+const Skeleton = ({ w='100%', h=20, r=6 }) => (
+  <div style={{ width:w, height:h, borderRadius:r, background:'var(--muted)', animation:'pulse 1.5s ease-in-out infinite' }} />
 );
 
 export default function DashboardPage() {
   const [stats, setStats]     = useState(null);
   const [loading, setLoading] = useState(true);
   const { user }              = useAuth();
+  const isDeveloper           = user?.role === 'Developer';
 
   useEffect(() => {
     api.get('/dashboard').then(({ data }) => {
@@ -52,11 +53,15 @@ export default function DashboardPage() {
     }).catch(() => setLoading(false));
   }, []);
 
-  const statusData   = stats?.tasksByStatus?.map(s => ({ name: s.status,   value: Number(s.count), color: STATUS_COLORS[s.status]     || '#10b981' })) || [];
-  const priorityData = stats?.tasksByPriority?.map(p => ({ name: p.priority, value: Number(p.count), color: PRIORITY_COLORS[p.priority] || '#10b981' })) || [];
+  const statusData   = stats?.tasksByStatus?.map(s  => ({ name: s.status,   value: Number(s.count),  color: STATUS_COLORS[s.status]     || '#10b981' })) || [];
+  const priorityData = stats?.tasksByPriority?.map(p => ({ name: p.priority, value: Number(p.count),  color: PRIORITY_COLORS[p.priority] || '#10b981' })) || [];
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const bannerSub = isDeveloper
+    ? "Here's your assigned tasks and project overview."
+    : "Here's what's happening across your projects today.";
 
   return (
     <div className="app-shell">
@@ -65,38 +70,30 @@ export default function DashboardPage() {
         <div className="topbar">
           <div className="topbar-breadcrumb"><span>Dashboard</span></div>
         </div>
-
         <div className="page">
 
           {/* Welcome banner */}
-          <div style={{
-            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-            borderRadius: 14, padding: '20px 28px', marginBottom: 24,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            overflow: 'hidden', position: 'relative',
-          }}>
-            <div style={{ position: 'absolute', top: -20, right: -20, width: 180, height: 180, background: 'rgba(255,255,255,0.06)', borderRadius: '50%' }} />
-            <div style={{ position: 'absolute', bottom: -40, right: 60, width: 140, height: 140, background: 'rgba(255,255,255,0.04)', borderRadius: '50%' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ margin: 0, color: '#fff', fontSize: 18, fontWeight: 600, letterSpacing: '-0.3px' }}>
+          <div style={{ background:'linear-gradient(135deg, #059669 0%, #047857 100%)', borderRadius:14, padding:'20px 28px', marginBottom:24, display:'flex', alignItems:'center', justifyContent:'space-between', overflow:'hidden', position:'relative' }}>
+            <div style={{ position:'absolute', top:-20, right:-20, width:180, height:180, background:'rgba(255,255,255,0.06)', borderRadius:'50%' }} />
+            <div style={{ position:'absolute', bottom:-40, right:60, width:140, height:140, background:'rgba(255,255,255,0.04)', borderRadius:'50%' }} />
+            <div style={{ position:'relative', zIndex:1 }}>
+              <h2 style={{ margin:0, color:'#fff', fontSize:18, fontWeight:600, letterSpacing:'-0.3px' }}>
                 {greeting}, {user?.name?.split(' ')[0] || 'there'} 👋
               </h2>
-              <p style={{ margin: '4px 0 0', color: 'rgba(209,250,229,0.8)', fontSize: 13 }}>
-                Here's what's happening across your projects today.
-              </p>
+              <p style={{ margin:'4px 0 0', color:'rgba(209,250,229,0.8)', fontSize:13 }}>{bannerSub}</p>
             </div>
-            <div style={{ position: 'relative', zIndex: 1, textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: 'rgba(167,243,208,0.7)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Role</div>
-              <div style={{ fontSize: 14, color: '#fff', fontWeight: 600 }}>{user?.role}</div>
+            <div style={{ position:'relative', zIndex:1, textAlign:'right' }}>
+              <div style={{ fontSize:11, color:'rgba(167,243,208,0.7)', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.06em' }}>Role</div>
+              <div style={{ fontSize:14, color:'#fff', fontWeight:600 }}>{user?.role}</div>
             </div>
           </div>
 
           {/* Stat cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 24 }}>
-            {STAT_CONFIG.map(({ key, label, icon, cls }) => (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:14, marginBottom:24 }}>
+            {STAT_CONFIG.map(({ key, label, devLabel, icon, cls }) => (
               <div key={key} className="stat-card">
                 <div className={`stat-icon ${cls}`}>{icon}</div>
-                <div className="stat-label">{label}</div>
+                <div className="stat-label">{isDeveloper ? devLabel : label}</div>
                 <div className="stat-value">
                   {loading ? <Skeleton w={40} h={28} /> : (stats?.[key] ?? 0)}
                 </div>
@@ -105,14 +102,15 @@ export default function DashboardPage() {
           </div>
 
           {/* Charts */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: 'var(--foreground)', letterSpacing: '-0.2px' }}>Tasks by status</h3>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
+            <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'20px 24px' }}>
+              <h3 style={{ margin:'0 0 16px', fontSize:14, fontWeight:600, color:'var(--foreground)', letterSpacing:'-0.2px' }}>
+                {isDeveloper ? 'My tasks by status' : 'Tasks by status'}
+              </h3>
               {loading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}><Skeleton w={160} h={160} r="50%" /></div>
+                <div style={{ display:'flex', justifyContent:'center', padding:'20px 0' }}><Skeleton w={160} h={160} r="50%" /></div>
               ) : statusData.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13, padding: '30px 0' }}>No data yet</p>
+                <p style={{ textAlign:'center', color:'var(--muted-foreground)', fontSize:13, padding:'30px 0' }}>No data yet</p>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
@@ -120,27 +118,29 @@ export default function DashboardPage() {
                       {statusData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="none" />)}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: 12, color: 'var(--foreground)' }}>{v}</span>} />
+                    <Legend iconType="circle" iconSize={8} formatter={v=><span style={{ fontSize:12, color:'var(--foreground)' }}>{v}</span>} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
             </div>
 
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: 'var(--foreground)', letterSpacing: '-0.2px' }}>Tasks by priority</h3>
+            <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'20px 24px' }}>
+              <h3 style={{ margin:'0 0 16px', fontSize:14, fontWeight:600, color:'var(--foreground)', letterSpacing:'-0.2px' }}>
+                {isDeveloper ? 'My tasks by priority' : 'Tasks by priority'}
+              </h3>
               {loading ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+                <div style={{ display:'flex', flexDirection:'column', gap:12, paddingTop:16 }}>
                   <Skeleton h={32} /><Skeleton h={32} /><Skeleton h={32} />
                 </div>
               ) : priorityData.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13, padding: '30px 0' }}>No data yet</p>
+                <p style={{ textAlign:'center', color:'var(--muted-foreground)', fontSize:13, padding:'30px 0' }}>No data yet</p>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={priorityData} barSize={32} margin={{ left: -16, right: 8 }}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--accent)', radius: 4 }} />
-                    <Bar dataKey="value" name="Tasks" radius={[6, 6, 0, 0]}>
+                  <BarChart data={priorityData} barSize={32} margin={{ left:-16, right:8 }}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize:12, fill:'var(--muted-foreground)' }} />
+                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize:11, fill:'var(--muted-foreground)' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill:'var(--accent)', radius:4 }} />
+                    <Bar dataKey="value" name="Tasks" radius={[6,6,0,0]}>
                       {priorityData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Bar>
                   </BarChart>
@@ -149,45 +149,44 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Overview row */}
+          {/* Overview */}
           {!loading && stats && (
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '18px 24px' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: 'var(--foreground)', letterSpacing: '-0.2px' }}>Overview</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'18px 24px' }}>
+              <h3 style={{ margin:'0 0 16px', fontSize:14, fontWeight:600, color:'var(--foreground)', letterSpacing:'-0.2px' }}>
+                {isDeveloper ? 'My overview' : 'Overview'}
+              </h3>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
                 {[
                   {
-                    label: 'Completion rate',
+                    label: isDeveloper ? 'My completion rate' : 'Completion rate',
                     value: stats.totalTasks > 0 ? `${Math.round((stats.completedTasks / stats.totalTasks) * 100)}%` : '—',
-                    sub: `${stats.completedTasks} of ${stats.totalTasks} tasks done`,
+                    sub:   `${stats.completedTasks} of ${stats.totalTasks} tasks done`,
                     color: '#10b981',
                   },
                   {
-                    label: 'Pending workload',
+                    label: isDeveloper ? 'My pending tasks' : 'Pending workload',
                     value: stats.pendingTasks,
-                    sub: 'Tasks not yet completed',
+                    sub:   'Tasks not yet completed',
                     color: '#f59e0b',
                   },
                   {
                     label: 'Overdue items',
                     value: stats.overdueTasks,
-                    sub: stats.overdueTasks === 0 ? 'You\'re all caught up!' : 'Need immediate attention',
+                    sub:   stats.overdueTasks === 0 ? 'All caught up!' : 'Need immediate attention',
                     color: stats.overdueTasks > 0 ? '#ef4444' : '#10b981',
                   },
                 ].map(({ label, value, sub, color }) => (
-                  <div key={label} style={{ padding: '14px 16px', borderRadius: 8, background: 'var(--muted)', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: 11, color: 'var(--muted-foreground)', fontWeight: 500, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</div>
-                    <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 6 }}>{sub}</div>
+                  <div key={label} style={{ padding:'14px 16px', borderRadius:8, background:'var(--muted)', border:'1px solid var(--border)' }}>
+                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.06em' }}>{label}</div>
+                    <div style={{ fontSize:28, fontWeight:700, color, letterSpacing:'-0.5px', lineHeight:1 }}>{value}</div>
+                    <div style={{ fontSize:12, color:'var(--muted-foreground)', marginTop:6 }}>{sub}</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
-
-        <style>{`
-          @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        `}</style>
+        <style>{`@keyframes pulse { 0%, 100% { opacity:1; } 50% { opacity:0.5; } }`}</style>
       </main>
     </div>
   );

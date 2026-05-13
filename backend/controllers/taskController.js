@@ -1,4 +1,4 @@
-const { Task, User, Project } = require('../models');
+const { Task, User, Project, ProjectMember } = require('../models');
 const { Op } = require('sequelize');
 
 exports.getAll = async (req, res) => {
@@ -17,13 +17,14 @@ exports.getAll = async (req, res) => {
     if (req.user.role === 'Developer') where.assigned_to = req.user.id;
 
     const { rows, count } = await Task.findAndCountAll({
-      where, limit, offset,
-      include: [
-        { model: User, as: 'assignee', attributes: ['id','name','email'] },
-        { model: User, as: 'creator',  attributes: ['id','name'] },
-      ],
-      order: [['created_at','DESC']],
-    });
+  where, limit, offset,
+  include: [
+    { model: User,    as: 'assignee',  attributes: ['id','name','email'] },
+    { model: User,    as: 'creator',   attributes: ['id','name'] },
+    { model: Project, attributes: ['id','name'] },
+  ],
+  order: [['created_at','DESC']],
+});
     res.json({ data: rows, total: count, page, totalPages: Math.ceil(count / limit) });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
@@ -54,6 +55,14 @@ exports.create = async (req, res) => {
       priority, due_date: due_date || null,
       created_by: req.user.id,
     });
+
+    // Auto-add assignee to project_members
+    if (assigned_to) {
+      await ProjectMember.findOrCreate({
+        where: { project_id: parseInt(project_id), user_id: parseInt(assigned_to) }
+      });
+    }
+
     res.status(201).json(task);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
@@ -70,16 +79,23 @@ exports.update = async (req, res) => {
       if (!status) return res.status(400).json({ message: 'Developer can only update status' });
       await task.update({ status });
     } else {
-      const { title, description, assigned_to, priority, due_date, status } = req.body;
-      await task.update({
-        ...(title       !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(priority    !== undefined && { priority }),
-        ...(status      !== undefined && { status }),
-        ...(due_date    !== undefined && { due_date: due_date || null }),
-        assigned_to: assigned_to !== undefined ? (assigned_to || null) : task.assigned_to,
-      });
-    }
+  const { title, description, assigned_to, priority, due_date, status } = req.body;
+  await task.update({
+    ...(title       !== undefined && { title }),
+    ...(description !== undefined && { description }),
+    ...(priority    !== undefined && { priority }),
+    ...(status      !== undefined && { status }),
+    ...(due_date    !== undefined && { due_date: due_date || null }),
+    assigned_to: assigned_to !== undefined ? (assigned_to || null) : task.assigned_to,
+  });
+
+  // Auto-add new assignee to project_members
+  if (assigned_to) {
+    await ProjectMember.findOrCreate({
+      where: { project_id: task.project_id, user_id: parseInt(assigned_to) }
+    });
+  }
+}
 
     const updated = await Task.findByPk(task.id, {
       include: [
