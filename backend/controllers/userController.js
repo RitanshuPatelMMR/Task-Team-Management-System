@@ -60,3 +60,18 @@ exports.updateStatus = async (req, res) => {
     res.json({ message: `User ${is_active ? 'activated' : 'deactivated'}` });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
+exports.remove = async (req, res) => {
+  try {
+    if (parseInt(req.params.id) === req.user.id)
+      return res.status(400).json({ message: 'Cannot delete your own account' });
+
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // ADD THIS LINE ↓
+    await require('../models').Task.update({ assigned_to: null }, { where: { assigned_to: req.params.id } });
+
+    await user.destroy();
+    res.json({ message: 'User deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};

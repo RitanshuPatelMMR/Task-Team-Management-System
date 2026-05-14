@@ -67,7 +67,13 @@ export default function UsersPage() {
     await api.put(`/users/${id}/status`, { is_active: !is_active });
     fetchUsers();
   };
-
+const deleteUser = async (id, name) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/users/${id}`);
+      fetchUsers();
+    } catch (err) { alert(err.response?.data?.message); }
+  };
   return (
     <div className="app-shell">
       <Sidebar />
@@ -154,6 +160,15 @@ export default function UsersPage() {
                           >
                             {u.is_active ? 'Deactivate' : 'Activate'}
                           </button>
+                          <button
+  onClick={()=>deleteUser(u.id, u.name)}
+  style={{
+    padding:'4px 12px', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer', border:'1px solid',
+    background:'#fff1f2', color:'#e11d48', borderColor:'#fecdd3',
+  }}
+>
+  Delete
+</button>
                         </div>
                       </td>
                     </tr>

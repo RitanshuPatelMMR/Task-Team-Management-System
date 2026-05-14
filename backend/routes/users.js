@@ -7,5 +7,6 @@ router.get('/',           verifyToken, checkRole('Admin','Manager'), controller.
 router.post('/',          verifyToken, checkRole('Admin'), controller.create);
 router.put('/:id/role',   verifyToken, checkRole('Admin'), controller.updateRole);
 router.put('/:id/status', verifyToken, checkRole('Admin'), controller.updateStatus);
+router.delete('/:id',     verifyToken, checkRole('Admin'), controller.remove);  // ADD THIS
 
 module.exports = router;
