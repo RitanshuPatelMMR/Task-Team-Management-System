@@ -75,6 +75,15 @@ export default function ProjectsPage() {
     } catch (err) { alert(err.response?.data?.message); }
   };
 
+  const deleteProject = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this project? This cannot be undone.')) return;
+    try {
+      await api.delete(`/projects/${id}`);
+      fetchProjects();
+    } catch (err) { alert(err.response?.data?.message); }
+  };
+
   const statusClass = { 'Active':'status-active', 'Planned':'status-planned', 'On Hold':'status-onhold', 'Completed':'status-completed' };
 
   return (
@@ -157,12 +166,16 @@ export default function ProjectsPage() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
               {projects.map(p => (
                 <div
-                  key={p.id}
-                  className={`project-card ${statusClass[p.status]||''}`}
-                  onClick={() => navigate(`/projects/${p.id}`)}
-                  // ── FIX: prevent card from stretching ──
-                  style={{ overflow:'hidden', minWidth:0 }}
-                >
+  key={p.id}
+  className={`project-card ${statusClass[p.status]||''}`}
+  onClick={() => navigate(`/projects/${p.id}`)}
+  style={{
+    overflow: 'hidden',
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column'
+  }}
+>
                   {/* Title row — clamped to 1 line */}
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8, marginBottom:8 }}>
                     <h3 style={{
@@ -203,8 +216,7 @@ export default function ProjectsPage() {
                   </p>
 
                   {/* Members row */}
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                    <MemberAvatars members={p.members||[]} />
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, marginTop:'auto' }}>                    <MemberAvatars members={p.members||[]} />
                     <span style={{ fontSize:12, color:'var(--muted-foreground)' }}>{p.members?.length||0} members</span>
                   </div>
 
@@ -222,6 +234,16 @@ export default function ProjectsPage() {
                       {p.end_date && <span style={{ whiteSpace:'nowrap' }}>{p.end_date}</span>}
                     </div>
                   )}
+                  {user?.role === 'Admin' && (
+  <div style={{ marginTop:12, paddingTop:10, borderTop:'1px solid var(--border)', display:'flex', justifyContent:'flex-end' }}>
+    <button
+      onClick={e => deleteProject(p.id, e)}
+      style={{ padding:'4px 12px', background:'#fee2e2', border:'1px solid #fca5a5', borderRadius:6, fontSize:11, fontWeight:500, cursor:'pointer', color:'#991b1b' }}
+    >
+      Delete
+    </button>
+  </div>
+)}
                 </div>
               ))}
             </div>
